@@ -55,7 +55,7 @@
     "@napi-rs/canvas": "^0.1.88",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@paypal/paypal-js": "^10.0.0",
-    "@prisma/adapter-libsql": "^7.8.0",
+    "@prisma/adapter-libsql": "5.22.0",
     "@prisma/client": "5.22.0",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-popover": "^1.1.15",
