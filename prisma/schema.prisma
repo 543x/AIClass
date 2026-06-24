@@ -39,13 +39,13 @@ model Payment {
   id          String   @id @default(cuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan        String   // pro_monthly, pro_yearly
-  status      String   // paid, pending, cancelled
-  provider    String   // lemonsqueezy, stripe, etc.
-  providerId  String?  // 支付提供商的事务 ID
-  eventId     String?  @unique  // ✅ 添加 @unique
-  amount      Int      // 金额（分）
-  currency    String   // usd, cny, etc.
+  plan        String
+  status      String
+  provider    String
+  providerId  String?  @unique  // ✅ 添加 @unique
+  eventId     String?  @unique
+  amount      Int
+  currency    String
   endDate     DateTime?
   createdAt   DateTime @default(now())
 }
