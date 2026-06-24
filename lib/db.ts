@@ -1,7 +1,6 @@
 // lib/db.ts
+
 import { PrismaClient } from '@prisma/client'
-import { PrismaLibSQL } from '@prisma/adapter-libsql'
-import { createClient } from '@libsql/client'
 
 const globalForPrisma = global as unknown as {
   prisma?: PrismaClient
@@ -9,17 +8,9 @@ const globalForPrisma = global as unknown as {
 
 function createPrismaClient() {
   if (process.env.NODE_ENV === 'production') {
-    const libsql = createClient({
-      url: process.env.DATABASE_URL!,
-      authToken: process.env.TURSO_AUTH_TOKEN,
-    })
-
-    const adapter = new PrismaLibSQL(libsql)
-
-    // ✅ 使用 as any 绕过类型检查
-    return new PrismaClient({
-      adapter: adapter as any,
-    } as any) as PrismaClient
+    // ✅ 生产环境直接使用 PrismaClient，不传 adapter
+    // DATABASE_URL 使用 libsql 的 postgresql 兼容连接串
+    return new PrismaClient()
   }
 
   return new PrismaClient()
