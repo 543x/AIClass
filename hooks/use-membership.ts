@@ -11,7 +11,10 @@ interface Membership {
 }
 
 export function useMembership() {
-  const { user, isLoggedIn } = useUserStore();
+  const { user } = useUserStore();
+  // 通过 user 是否存在来判断是否已登录
+  const isLoggedIn = !!user;
+  
   const [membership, setMembership] = useState<Membership>({
     isPro: false,
     plan: 'free',
