@@ -1,7 +1,10 @@
 import { cookies } from 'next/headers'
 import { prisma } from './db'
-import { User } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import crypto from 'crypto'
+
+// 从 Prisma 命名空间导出 User 类型
+type User = Prisma.UserGetPayload<{}>
 
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7 // 7 天
 
