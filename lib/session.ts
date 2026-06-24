@@ -2,14 +2,15 @@ import { cookies } from 'next/headers'
 import { prisma } from './db'
 import crypto from 'crypto'
 
-// 直接定义 User 类型（根据您的 Prisma schema）
+// 根据实际的 Prisma schema 定义 User 类型
 interface User {
   id: string
   email: string
-  name: string | null
-  password: string | null
+  nickname: string | null   // ✅ 改为 nickname
+  passwordHash: string | null  // 注意：密码字段名可能是 passwordHash
   createdAt: Date
   updatedAt: Date
+  // 如果有其他字段，也添加进来
 }
 
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7 // 7 天
