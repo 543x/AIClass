@@ -1,34 +1,35 @@
 // lib/db.ts
 
 import { PrismaClient } from '@prisma/client'
-import { PrismaLibSQL } from '@prisma/adapter-libsql'  // ✅ 导入时是大写 "SQL"
+import { PrismaLibSQL } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
 
 const globalForPrisma = global as unknown as {
   prisma?: PrismaClient
 }
 
-function createPrismaClient() {
-  if (process.env.NODE_ENV === 'production') {
-    const libsql = createClient({
-      url: process.env.DATABASE_URL!,
-      authToken: process.env.TURSO_AUTH_TOKEN,
-    })
+let prisma: PrismaClient
 
-    const adapter = new PrismaLibSQL(libsql)  // ✅ 使用时要保持一致，也是大写 "SQL"
+if (process.env.NODE_ENV === 'production') {
+  const libsql = createClient({
+    url: process.env.DATABASE_URL!,
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  })
 
-    return new PrismaClient({
+  const adapter = new PrismaLibSQL(libsql)
+
+  // 尝试使用 driverAdapters
+  prisma = new PrismaClient({
+    driverAdapters: {
       adapter,
-    })
-  }
-
-  return new PrismaClient()
+    },
+  })
+} else {
+  prisma = new PrismaClient()
 }
-
-export const prisma =
-  globalForPrisma.prisma ??
-  createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma
 }
+
+export { prisma }
