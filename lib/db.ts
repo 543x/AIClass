@@ -1,7 +1,7 @@
 // lib/db.ts
 
 import { PrismaClient } from '@prisma/client'
-import { PrismaLibSql } from '@prisma/adapter-libsql'  // ✅ 大小写正确
+import { PrismaLibSQL } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'  // ✅ 包名正确
 
 const globalForPrisma = global as unknown as {
