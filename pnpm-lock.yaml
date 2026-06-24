@@ -134,9 +134,6 @@ importers:
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
-      better-sqlite3:
-        specifier: ^9.6.0
-        version: 9.6.0
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -363,6 +360,9 @@ importers:
       '@types/tinycolor2':
         specifier: ^1.4.6
         version: 1.4.6
+      better-sqlite3:
+        specifier: ^9.6.0
+        version: 9.6.0
       eslint:
         specifier: ^9
         version: 9.39.4(jiti@2.6.1)
