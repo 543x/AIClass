@@ -43,6 +43,7 @@ model Payment {
   status      String   // paid, pending, cancelled
   provider    String   // lemonsqueezy, stripe, etc.
   providerId  String?  // 支付提供商的事务 ID
+  eventId     String? 
   amount      Int      // 金额（分）
   currency    String   // usd, cny, etc.
   endDate     DateTime?
