@@ -53,8 +53,6 @@
     "@maic/renderer": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@napi-rs/canvas": "^0.1.88",
-    "@paypal/checkout-server-sdk": "^1.0.3",
-    "@paypal/paypal-js": "^10.0.0",
     "@prisma/adapter-libsql": "5.22.0",
     "@prisma/client": "5.22.0",
     "@radix-ui/react-checkbox": "^1.3.3",
