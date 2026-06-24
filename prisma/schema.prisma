@@ -1,58 +1,46 @@
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "libsql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
   id           String    @id @default(cuid())
   email        String    @unique
-  passwordHash String
   nickname     String?
-  role         String    @default("user")
+  passwordHash String
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-
   sessions     Session[]
-  payments     Payment[]
   usages       Usage[]
+  payments     Payment[]
 }
 
 model Session {
   id        String   @id @default(cuid())
   token     String   @unique
   userId    String
-  expiresAt DateTime
-
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Payment {
-  id         String   @id @default(cuid())
-  userId     String
-  plan       String   // 'monthly' | 'yearly'
-  status     String   // 'paid' | 'canceled'
-  provider   String   // 'paypal'
-  providerId String   @unique
-  eventId    String?  @unique
-  amount     Int
-  currency   String   @default("twd")
-  endDate    DateTime // 🔥 必须存在
-  createdAt  DateTime @default(now())
-
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, endDate])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Usage {
   id        String   @id @default(cuid())
   userId    String
-  createdAt DateTime @default(now())
-
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    String
+  plan      String
+  endDate   DateTime?
+  createdAt DateTime @default(now())
 }
