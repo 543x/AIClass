@@ -41,7 +41,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "genfonts": "node scripts/generate-fonts-css.mjs",
-    "build": "rimraf dist && tsc -p tsconfig.json",
+    "build": "node scripts/generate-fonts-css.mjs && rm -rf dist && rollup -c && tsc --emitDeclarationOnly --declarationDir dist",
     "dev": "rollup -c -w",
     "typecheck": "tsc --noEmit"
   },
