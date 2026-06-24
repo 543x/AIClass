@@ -84,7 +84,7 @@
     "jsonrepair": "^3.13.2",
     "jszip": "^3.10.1",
     "katex": "^0.16.33",
-    "libsql-client": "^0.6.3",
+    "@libsql/client": "^0.15.15",
     "lodash": "^4.17.21",
     "lucide-react": "^0.562.0",
     "mathml2omml": "workspace:*",
@@ -162,8 +162,14 @@
     "vue-to-react": "^1.0.0"
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "better-sqlite3",
+      "sharp"
+    ],
     "ignoredBuiltDependencies": [
-      "sharp",
       "unrs-resolver"
     ]
   },
