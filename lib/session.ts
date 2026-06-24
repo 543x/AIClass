@@ -1,10 +1,16 @@
 import { cookies } from 'next/headers'
 import { prisma } from './db'
-import { Prisma } from '@prisma/client'
 import crypto from 'crypto'
 
-// 从 Prisma 命名空间导出 User 类型
-type User = Prisma.UserGetPayload<{}>
+// 直接定义 User 类型（根据您的 Prisma schema）
+interface User {
+  id: string
+  email: string
+  name: string | null
+  password: string | null
+  createdAt: Date
+  updatedAt: Date
+}
 
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7 // 7 天
 
@@ -41,14 +47,12 @@ export async function getSession(): Promise<{ user: User; token: string } | null
 
   if (!session) return null
 
-  // 检查是否过期
   if (session.expiresAt < new Date()) {
     await prisma.session.delete({ where: { id: session.id } })
     cookieStore.delete('session')
     return null
   }
 
-  // 🔥 滑动续期：每次访问延长 7 天
   const newExpiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000)
   await prisma.session.update({
     where: { id: session.id },
@@ -63,7 +67,7 @@ export async function getSession(): Promise<{ user: User; token: string } | null
     maxAge: SESSION_MAX_AGE,
   })
 
-  return { user: session.user, token }
+  return { user: session.user as User, token }
 }
 
 export async function getUser(): Promise<User | null> {
