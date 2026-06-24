@@ -119,7 +119,8 @@ export async function getMembership(userId: string) {
     orderBy: { endDate: 'desc' },
   })
 
-  if (!payment) {
+  // ✅ 添加空值检查
+  if (!payment || !payment.endDate) {
     return { isPro: false, plan: 'free', endDate: null, remainingDays: 0 }
   }
 
