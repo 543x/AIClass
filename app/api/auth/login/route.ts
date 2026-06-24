@@ -32,9 +32,14 @@ export async function POST(req: NextRequest) {
       user: { id: user.id, email: user.email, nickname: user.nickname },
     })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
-    }
-    return NextResponse.json({ error: '登录失败，请稍后重试' }, { status: 500 })
+  if (error instanceof z.ZodError) {
+    return NextResponse.json(
+      { error: error.issues[0].message },  // 🔥 改为 issues
+      { status: 400 }
+    )
   }
+  return NextResponse.json(
+    { error: '登录失败，请稍后重试' },
+    { status: 500 }
+  )
 }

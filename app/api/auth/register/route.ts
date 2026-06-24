@@ -49,16 +49,15 @@ export async function POST(req: NextRequest) {
       }
     })
   } catch (error) {
-    console.error(error)
-
+  if (error instanceof z.ZodError) {
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : '注册失败'
-      },
-      { status: 500 }
+      { error: error.issues[0].message },  // 🔥 改为 issues
+      { status: 400 }
     )
   }
+  return NextResponse.json(
+    { error: '注册失败，请稍后重试' },
+    { status: 500 }
+  )
+}
 }
