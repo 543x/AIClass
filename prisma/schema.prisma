@@ -36,11 +36,15 @@ model Usage {
 }
 
 model Payment {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status    String
-  plan      String
-  endDate   DateTime?
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan        String   // pro_monthly, pro_yearly
+  status      String   // paid, pending, cancelled
+  provider    String   // lemonsqueezy, stripe, etc.
+  providerId  String?  // 支付提供商的事务 ID
+  amount      Int      // 金额（分）
+  currency    String   // usd, cny, etc.
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
 }
