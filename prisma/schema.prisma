@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("NEON_URL")  # 改为 NEON_URL
+  url      = env("NEON_URL")
 }
 
 model User {
@@ -42,7 +42,7 @@ model Payment {
   plan        String
   status      String
   provider    String
-  providerId  String?  @unique  // ✅ 添加 @unique
+  providerId  String?  @unique
   eventId     String?  @unique
   amount      Int
   currency    String
