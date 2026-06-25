@@ -1052,7 +1052,7 @@ function HomePage() {
       )}
 
       <div className="mt-auto pt-12 pb-4 text-center text-xs text-muted-foreground/40">
-        OpenMAIC Open Source Project
+        AI Class Open Source Project
       </div>
     </div>
   );

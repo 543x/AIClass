@@ -1,19 +1,33 @@
 // lib/db.ts
 
 import { PrismaClient } from '@prisma/client'
+import { createLogger } from './logger'
+
+const log = createLogger('db')
 
 const globalForPrisma = global as unknown as {
   prisma?: PrismaClient
 }
 
 function createPrismaClient() {
-  if (process.env.NODE_ENV === 'production') {
-    // ✅ 生产环境直接使用 PrismaClient，不传 adapter
-    // DATABASE_URL 使用 libsql 的 postgresql 兼容连接串
-    return new PrismaClient()
-  }
+  try {
+    log.info(`Creating PrismaClient in ${process.env.NODE_ENV} mode`)
+    log.info(`DATABASE_URL: ${process.env.DATABASE_URL ? '✓ set' : '✗ missing'}`)
+    
+    if (process.env.NODE_ENV === 'production') {
+      // 生产环境直接使用 PrismaClient
+      return new PrismaClient({
+        log: ['error', 'warn'],
+      })
+    }
 
-  return new PrismaClient()
+    return new PrismaClient({
+      log: ['query', 'error', 'warn'],
+    })
+  } catch (error) {
+    log.error('Failed to create PrismaClient:', error)
+    throw error
+  }
 }
 
 export const prisma =
