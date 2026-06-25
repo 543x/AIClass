@@ -716,19 +716,18 @@ function HomePage() {
 
             <div className="px-3 pb-3 flex items-end gap-2">
               <div className="flex-1 min-w-0">
-                <GenerationToolbar
-                  webSearch={form.webSearch}
-                  onWebSearchChange={(v) => updateForm('webSearch', v)}
-                  onSettingsOpen={(section) => {
-                    setSettingsSection(section);
-                    setSettingsOpen(true);
-                  }}
-                  // 🗑️ 删除 PDF 相关 props
-                  // pdfFile={form.pdfFile}
-                  // onPdfFileChange={(f) => updateForm('pdfFile', f)}
-                  // onPdfError={setError}
-                />
-              </div>
+               <GenerationToolbar
+                 webSearch={form.webSearch}
+                 onWebSearchChange={(v) => updateForm('webSearch', v)}
+                 onSettingsOpen={(section) => {
+                 setSettingsSection(section);
+                 setSettingsOpen(true);
+               }}
+                pdfFile={null}  // 传入 null
+                onPdfFileChange={() => {}}  // 空函数
+                onPdfError={() => {}}  // 空函数
+              />
+            </div>
 
               <Tooltip>
                 <TooltipTrigger asChild>
