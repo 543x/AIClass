@@ -12,7 +12,6 @@ import {
   ImagePlus,
   Pencil,
   Trash2,
-  Search,
   Settings,
   Sun,
   Moon,
@@ -59,7 +58,7 @@ import { useMediaGenerationStore } from '@/lib/store/media-generation';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useDraftCache } from '@/lib/hooks/use-draft-cache';
-import { SpeechButton } from '@/components/audio/speech-button';
+// 🗑️ 删除: import { SpeechButton } from '@/components/audio/speech-button';
 import { useImportClassroom } from '@/lib/import/use-import-classroom';
 import { shouldShowVocationalTestUi } from '@/lib/config/feature-flags';
 import { useImportPptx } from '@/lib/import/use-import-pptx';
@@ -89,7 +88,7 @@ const INTERACTIVE_MODE_STORAGE_KEY = 'interactiveModeEnabled';
 const PPTX_IMPORT_ENABLED = process.env.NEXT_PUBLIC_ENABLE_PPTX_IMPORT === 'true';
 
 interface FormState {
-  pdfFile: File | null;
+  // 🗑️ 删除: pdfFile: File | null;
   requirement: string;
   webSearch: boolean;
   interactiveMode: boolean;
@@ -97,7 +96,7 @@ interface FormState {
 }
 
 const initialFormState: FormState = {
-  pdfFile: null,
+  // 🗑️ 删除: pdfFile: null,
   requirement: '',
   webSearch: false,
   interactiveMode: false,
@@ -225,10 +224,11 @@ function HomePage() {
   const [classrooms, setClassrooms] = useState<StageListItem[]>([]);
   const [thumbnails, setThumbnails] = useState<Record<string, Slide>>({});
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchButtonRef = useRef<HTMLButtonElement>(null);
+  // 🗑️ 删除搜索相关状态
+  // const [searchOpen, setSearchOpen] = useState(false);
+  // const [searchQuery, setSearchQuery] = useState('');
+  // const searchInputRef = useRef<HTMLInputElement>(null);
+  // const searchButtonRef = useRef<HTMLButtonElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const thumbnailsRef = useRef<Record<string, Slide>>({});
@@ -317,16 +317,17 @@ function HomePage() {
     }
   };
 
-  const deferredSearchQuery = useDeferredValue(searchQuery);
-  const filteredClassrooms = useMemo(() => {
-    const q = deferredSearchQuery.trim().toLowerCase();
-    if (!q) return classrooms;
-    return classrooms.filter((c) => {
-      const name = c.name?.toLowerCase() ?? '';
-      const desc = c.description?.toLowerCase() ?? '';
-      return name.includes(q) || desc.includes(q);
-    });
-  }, [classrooms, deferredSearchQuery]);
+  // 🗑️ 删除搜索相关逻辑
+  // const deferredSearchQuery = useDeferredValue(searchQuery);
+  // const filteredClassrooms = useMemo(() => {
+  //   const q = deferredSearchQuery.trim().toLowerCase();
+  //   if (!q) return classrooms;
+  //   return classrooms.filter((c) => {
+  //     const name = c.name?.toLowerCase() ?? '';
+  //     const desc = c.description?.toLowerCase() ?? '';
+  //     return name.includes(q) || desc.includes(q);
+  //   });
+  // }, [classrooms, deferredSearchQuery]);
 
   const updateForm = <K extends keyof FormState>(field: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -420,25 +421,25 @@ function HomePage() {
         ...(form.vocationalTestMode ? { taskEngineMode: true } : {}),
       };
 
-      let pdfStorageKey: string | undefined;
-      let pdfFileName: string | undefined;
-      let pdfProviderId: string | undefined;
-      let pdfProviderConfig: { apiKey?: string; baseUrl?: string } | undefined;
+      // 🗑️ 删除 PDF 相关代码
+      // let pdfStorageKey: string | undefined;
+      // let pdfFileName: string | undefined;
+      // let pdfProviderId: string | undefined;
+      // let pdfProviderConfig: { apiKey?: string; baseUrl?: string } | undefined;
 
-      if (form.pdfFile) {
-        pdfStorageKey = await storePdfBlob(form.pdfFile);
-        pdfFileName = form.pdfFile.name;
-
-        const settings = useSettingsStore.getState();
-        pdfProviderId = settings.pdfProviderId;
-        const providerCfg = settings.pdfProvidersConfig?.[settings.pdfProviderId];
-        if (providerCfg) {
-          pdfProviderConfig = {
-            apiKey: providerCfg.apiKey,
-            baseUrl: providerCfg.baseUrl,
-          };
-        }
-      }
+      // if (form.pdfFile) {
+      //   pdfStorageKey = await storePdfBlob(form.pdfFile);
+      //   pdfFileName = form.pdfFile.name;
+      //   const settings = useSettingsStore.getState();
+      //   pdfProviderId = settings.pdfProviderId;
+      //   const providerCfg = settings.pdfProvidersConfig?.[settings.pdfProviderId];
+      //   if (providerCfg) {
+      //     pdfProviderConfig = {
+      //       apiKey: providerCfg.apiKey,
+      //       baseUrl: providerCfg.baseUrl,
+      //     };
+      //   }
+      // }
 
       const sessionState = {
         sessionId: nanoid(),
@@ -446,10 +447,10 @@ function HomePage() {
         pdfText: '',
         pdfImages: [],
         imageStorageIds: [],
-        pdfStorageKey,
-        pdfFileName,
-        pdfProviderId,
-        pdfProviderConfig,
+        // 🗑️ 删除: pdfStorageKey,
+        // 🗑️ 删除: pdfFileName,
+        // 🗑️ 删除: pdfProviderId,
+        // 🗑️ 删除: pdfProviderConfig,
         sceneOutlines: null,
         currentStep: 'generating' as const,
       };
@@ -722,9 +723,10 @@ function HomePage() {
                     setSettingsSection(section);
                     setSettingsOpen(true);
                   }}
-                  pdfFile={form.pdfFile}
-                  onPdfFileChange={(f) => updateForm('pdfFile', f)}
-                  onPdfError={setError}
+                  // 🗑️ 删除 PDF 相关 props
+                  // pdfFile={form.pdfFile}
+                  // onPdfFileChange={(f) => updateForm('pdfFile', f)}
+                  // onPdfError={setError}
                 />
               </div>
 
@@ -758,7 +760,8 @@ function HomePage() {
                 </TooltipContent>
               </Tooltip>
 
-              <SpeechButton
+              {/* 🗑️ 删除 SpeechButton */}
+              {/* <SpeechButton
                 size="md"
                 onTranscription={(text) => {
                   setForm((prev) => {
@@ -767,7 +770,7 @@ function HomePage() {
                     return { ...prev, requirement: next };
                   });
                 }}
-              />
+              /> */}
 
               <button
                 onClick={handleGenerate}
@@ -897,7 +900,8 @@ function HomePage() {
                 </motion.div>
               </button>
 
-              <AnimatePresence initial={false}>
+              {/* 🗑️ 删除搜索图标和搜索框 */}
+              {/* <AnimatePresence initial={false}>
                 {!searchOpen ? (
                   <motion.button
                     key="search-icon"
@@ -976,7 +980,7 @@ function HomePage() {
                     </InputGroup>
                   </motion.div>
                 )}
-              </AnimatePresence>
+              </AnimatePresence> */}
 
               <button
                 onClick={triggerFileSelect}
@@ -1013,38 +1017,33 @@ function HomePage() {
                 transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
                 className="w-full overflow-hidden"
               >
-                {searchQuery.trim() && filteredClassrooms.length === 0 ? (
-                  <div className="pt-8 pb-2 text-center text-[13px] text-muted-foreground/60">
-                    {t('classroom.searchEmpty')}
-                  </div>
-                ) : (
-                  <div className="pt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
-                    {filteredClassrooms.map((classroom, i) => (
-                      <motion.div
-                        key={classroom.id}
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          delay: i * 0.04,
-                          duration: 0.35,
-                          ease: 'easeOut',
-                        }}
-                      >
-                        <ClassroomCard
-                          classroom={classroom}
-                          slide={thumbnails[classroom.id]}
-                          formatDate={formatDate}
-                          onDelete={handleDelete}
-                          onRename={handleRename}
-                          confirmingDelete={pendingDeleteId === classroom.id}
-                          onConfirmDelete={() => confirmDelete(classroom.id)}
-                          onCancelDelete={() => setPendingDeleteId(null)}
-                          onClick={() => router.push(`/classroom/${classroom.id}`)}
-                        />
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
+                {/* 🗑️ 删除搜索空状态和过滤逻辑，直接显示所有教室 */}
+                <div className="pt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
+                  {classrooms.map((classroom, i) => (
+                    <motion.div
+                      key={classroom.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        delay: i * 0.04,
+                        duration: 0.35,
+                        ease: 'easeOut',
+                      }}
+                    >
+                      <ClassroomCard
+                        classroom={classroom}
+                        slide={thumbnails[classroom.id]}
+                        formatDate={formatDate}
+                        onDelete={handleDelete}
+                        onRename={handleRename}
+                        confirmingDelete={pendingDeleteId === classroom.id}
+                        onConfirmDelete={() => confirmDelete(classroom.id)}
+                        onCancelDelete={() => setPendingDeleteId(null)}
+                        onClick={() => router.push(`/classroom/${classroom.id}`)}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
