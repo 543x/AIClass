@@ -1,3 +1,4 @@
+// lib/store/userStore.ts
 import { create } from 'zustand'
 
 interface User {
@@ -14,9 +15,9 @@ interface UserState {
   user: User | null
   loading: boolean
   fetchUser: () => Promise<void>
-  login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string, nickname: string) => Promise<void>
-  logout: () => Promise<void>  // 🔥 明确返回 Promise
+  login: (email: string, password: string, turnstileToken: string) => Promise<void>  // ✅ 添加 turnstileToken
+  register: (email: string, password: string, nickname: string, turnstileToken: string) => Promise<void>  // ✅ 添加 turnstileToken
+  logout: () => Promise<void>
 }
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -33,25 +34,26 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
   },
 
-  login: async (email, password) => {
+  // ✅ 修改 login：添加 turnstileToken 参数
+  login: async (email, password, turnstileToken) => {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, turnstileToken }),  // ✅ 传递 token
     })
     if (!res.ok) {
       const data = await res.json()
       throw new Error(data.error || '登录失败')
     }
-    // 🔥 login 内部调用 fetchUser，外部不需要再调用
     await get().fetchUser()
   },
 
-  register: async (email, password, nickname) => {
+  // ✅ 修改 register：添加 turnstileToken 参数
+  register: async (email, password, nickname, turnstileToken) => {
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, nickname }),
+      body: JSON.stringify({ email, password, nickname, turnstileToken }),  // ✅ 传递 token
     })
     if (!res.ok) {
       const data = await res.json()
@@ -60,7 +62,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     await get().fetchUser()
   },
 
-  logout: async () => {  // 🔥 async 函数
+  logout: async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
     set({ user: null })
   },

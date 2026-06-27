@@ -1,9 +1,10 @@
+// components/LoginModal.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Lock, User, Sparkles, Loader2, Eye, EyeOff } from 'lucide-react';
-import { SliderCaptcha } from './SliderCaptcha';
+import { TurnstileWidget } from './TurnstileWidget';  // ✅ 替换 SliderCaptcha
 import { useUserStore } from '@/lib/store/userStore';
 import { cn } from '@/lib/utils';
 
@@ -19,19 +20,21 @@ export function LoginModal({ onClose }: LoginModalProps) {
   const [nickname, setNickname] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');  // ✅ 改为 Turnstile token
   const [showPassword, setShowPassword] = useState(false);
 
   // 切换登录/注册时重置验证状态
   useEffect(() => {
-    setCaptchaVerified(false);
+    setTurnstileToken('');
     setError('');
   }, [isLogin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!captchaVerified) {
-      setError('请先完成滑块验证');
+    
+    // ✅ 验证 Turnstile token
+    if (!turnstileToken) {
+      setError('请完成人机验证');
       return;
     }
 
@@ -40,18 +43,19 @@ export function LoginModal({ onClose }: LoginModalProps) {
 
     try {
       if (isLogin) {
-        await login(email, password);
+        await login(email, password, turnstileToken);  // ✅ 传递 token
       } else {
         if (password.length < 6) {
           setError('密码至少6位');
           setLoading(false);
           return;
         }
-        await register(email, password, nickname);
+        await register(email, password, nickname, turnstileToken);  // ✅ 传递 token
       }
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : '操作失败，请重试');
+      setTurnstileToken('');  // ✅ 失败时重置
     } finally {
       setLoading(false);
     }
@@ -156,10 +160,11 @@ export function LoginModal({ onClose }: LoginModalProps) {
             </button>
           </div>
 
-          {/* 滑块验证 */}
-          <SliderCaptcha
-            onSuccess={() => setCaptchaVerified(true)}
-            onReset={() => setCaptchaVerified(false)}
+          {/* ✅ Turnstile 验证（替换滑块） */}
+          <TurnstileWidget
+            onVerify={(token) => setTurnstileToken(token)}
+            onError={() => setError('人机验证加载失败，请刷新页面')}
+            onExpire={() => setTurnstileToken('')}
             className="pt-1"
           />
 
@@ -180,7 +185,7 @@ export function LoginModal({ onClose }: LoginModalProps) {
           {/* 提交按钮 */}
           <button
             type="submit"
-            disabled={loading || !captchaVerified}
+            disabled={loading || !turnstileToken}
             className={cn(
               'relative w-full overflow-hidden rounded-xl py-3.5 font-semibold text-white transition-all',
               'bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg shadow-blue-500/25',

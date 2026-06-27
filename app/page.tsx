@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useDeferredValue } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -23,9 +24,7 @@ import {
   X,
   Presentation,
   LogIn,
-  User,
   Crown,
-  LogOut,
 } from 'lucide-react';
 import { useI18n } from '@/lib/hooks/use-i18n';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -35,11 +34,9 @@ import { InputGroup, InputGroupInput, InputGroupButton } from '@/components/ui/i
 import { Textarea as UITextarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { SettingsDialog } from '@/components/settings';
-import { GenerationToolbar } from '@/components/generation/generation-toolbar';
 import { AgentBar } from '@/components/agent/agent-bar';
 import { useTheme } from '@/lib/hooks/use-theme';
 import { nanoid } from 'nanoid';
-import { storePdfBlob } from '@/lib/utils/image-storage';
 import type { UserRequirements } from '@/lib/types/generation';
 import { useSettingsStore } from '@/lib/store/settings';
 import { hasUsableLLMProvider } from '@/lib/store/settings-validation';
@@ -58,23 +55,17 @@ import { useMediaGenerationStore } from '@/lib/store/media-generation';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useDraftCache } from '@/lib/hooks/use-draft-cache';
-// 🗑️ 删除: import { SpeechButton } from '@/components/audio/speech-button';
 import { useImportClassroom } from '@/lib/import/use-import-classroom';
 import { shouldShowVocationalTestUi } from '@/lib/config/feature-flags';
 import { useImportPptx } from '@/lib/import/use-import-pptx';
-
-
 import { useMembership } from '@/hooks/use-membership';
 import Link from 'next/link';
-
-// ============================================================
-// 🔐 新增：用户系统相关 import
-// ============================================================
 import { useUserStore } from '@/lib/store/userStore';
 import { LoginModal } from '@/components/LoginModal';
 import { UserMenu } from '@/components/UserMenu';
 import { PaywallModal } from '@/components/PaywallModal';
 import { LobsterIcon } from '@/components/LobsterIcon';
+
 const log = createLogger('Home');
 
 const WEB_SEARCH_STORAGE_KEY = 'webSearchEnabled';
@@ -88,7 +79,6 @@ const INTERACTIVE_MODE_STORAGE_KEY = 'interactiveModeEnabled';
 const PPTX_IMPORT_ENABLED = process.env.NEXT_PUBLIC_ENABLE_PPTX_IMPORT === 'true';
 
 interface FormState {
-  // 🗑️ 删除: pdfFile: File | null;
   requirement: string;
   webSearch: boolean;
   interactiveMode: boolean;
@@ -96,7 +86,6 @@ interface FormState {
 }
 
 const initialFormState: FormState = {
-  // 🗑️ 删除: pdfFile: null,
   requirement: '',
   webSearch: false,
   interactiveMode: false,
@@ -143,24 +132,18 @@ function HomePage() {
 
   // 🔥 龙虾悬停处理
   const handleLobsterHover = () => {
-    if (isDalek) return; // 防止重复触发
-    
+    if (isDalek) return;
     setIsDalek(true);
     setTaglineText('🦞 EXFOLIATE! EXFOLIATE!');
-    
-    // 清除之前的定时器
     if (taglineTimerRef.current) {
       clearTimeout(taglineTimerRef.current);
     }
-    
-    // 2 秒后恢复
     taglineTimerRef.current = setTimeout(() => {
       setTaglineText(originalSlogan);
       setIsDalek(false);
     }, 2000);
   };
 
-  // 组件卸载时清理定时器
   useEffect(() => {
     return () => {
       if (taglineTimerRef.current) {
@@ -173,9 +156,6 @@ function HomePage() {
   const { cachedValue: cachedRequirement, updateCache: updateRequirementCache } =
     useDraftCache<string>({ key: 'requirementDraft' });
 
-  // A usable LLM provider exists ⇒ a concrete model is always selected (#580
-  // invariant). Gate generation on this single condition (state A vs B)
-  // instead of inspecting modelId directly.
   const providersConfig = useSettingsStore((s) => s.providersConfig);
   const hasUsableProvider = hasUsableLLMProvider(providersConfig);
   const [recentOpen, setRecentOpen] = useState(true);
@@ -188,7 +168,6 @@ function HomePage() {
     }
   };
 
-  // Hydrate client-only state after mount (avoids SSR mismatch)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(RECENT_OPEN_STORAGE_KEY);
@@ -210,7 +189,6 @@ function HomePage() {
     }
   }, []);
 
-  // Restore requirement draft from localStorage on mount.
   const draftRestoredRef = useRef(false);
   useEffect(() => {
     if (draftRestoredRef.current) return;
@@ -224,11 +202,6 @@ function HomePage() {
   const [classrooms, setClassrooms] = useState<StageListItem[]>([]);
   const [thumbnails, setThumbnails] = useState<Record<string, Slide>>({});
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  // 🗑️ 删除搜索相关状态
-  // const [searchOpen, setSearchOpen] = useState(false);
-  // const [searchQuery, setSearchQuery] = useState('');
-  // const searchInputRef = useRef<HTMLInputElement>(null);
-  // const searchButtonRef = useRef<HTMLButtonElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const thumbnailsRef = useRef<Record<string, Slide>>({});
@@ -240,7 +213,6 @@ function HomePage() {
     window.setTimeout(() => revokeThumbnailSlideMediaUrls(previous), 0);
   };
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     if (!themeOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
@@ -317,18 +289,6 @@ function HomePage() {
     }
   };
 
-  // 🗑️ 删除搜索相关逻辑
-  // const deferredSearchQuery = useDeferredValue(searchQuery);
-  // const filteredClassrooms = useMemo(() => {
-  //   const q = deferredSearchQuery.trim().toLowerCase();
-  //   if (!q) return classrooms;
-  //   return classrooms.filter((c) => {
-  //     const name = c.name?.toLowerCase() ?? '';
-  //     const desc = c.description?.toLowerCase() ?? '';
-  //     return name.includes(q) || desc.includes(q);
-  //   });
-  // }, [classrooms, deferredSearchQuery]);
-
   const updateForm = <K extends keyof FormState>(field: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     try {
@@ -341,12 +301,9 @@ function HomePage() {
     }
   };
 
-    const { membership, loading: membershipLoading, refresh: refreshMembership } = useMembership();
+  const { membership, loading: membershipLoading, refresh: refreshMembership } = useMembership();
   const [remainingQuota, setRemainingQuota] = useState(5);
 
-  // ============================================================
-  // 🔥 新增：获取剩余免费次数
-  // ============================================================
   useEffect(() => {
     if (user) {
       fetch('/api/usage')
@@ -360,21 +317,13 @@ function HomePage() {
     }
   }, [user]);
 
-  // 🔥 修改 canGenerate - 加入会员和额度检查
   const canGenerate = useMemo(() => {
-    // 基础条件：有输入 + 有可用 LLM
     if (!form.requirement.trim() || !hasUsableProvider) return false;
-    // 必须登录
     if (!user) return false;
-    // Pro 会员无限生成
     if (membership.isPro) return true;
-    // 免费用户检查剩余次数
     return remainingQuota > 0;
   }, [form.requirement, hasUsableProvider, user, membership.isPro, remainingQuota]);
 
-  // ============================================================
-  // 🔐 修改：handleGenerate 加入用户验证
-  // ============================================================
   const handleGenerate = async () => {
     // 1. 验证输入
     if (!form.requirement.trim()) {
@@ -398,7 +347,6 @@ function HomePage() {
           setShowPaywall(true);
           return;
         }
-        // 更新剩余次数
         if (usageData.remaining !== undefined) {
           setRemainingQuota(usageData.remaining);
         }
@@ -407,7 +355,7 @@ function HomePage() {
         setError('网络错误，请稍后重试');
         return;
       }
-     }
+    }
     setError(null);
 
     try {
@@ -421,36 +369,12 @@ function HomePage() {
         ...(form.vocationalTestMode ? { taskEngineMode: true } : {}),
       };
 
-      // 🗑️ 删除 PDF 相关代码
-      // let pdfStorageKey: string | undefined;
-      // let pdfFileName: string | undefined;
-      // let pdfProviderId: string | undefined;
-      // let pdfProviderConfig: { apiKey?: string; baseUrl?: string } | undefined;
-
-      // if (form.pdfFile) {
-      //   pdfStorageKey = await storePdfBlob(form.pdfFile);
-      //   pdfFileName = form.pdfFile.name;
-      //   const settings = useSettingsStore.getState();
-      //   pdfProviderId = settings.pdfProviderId;
-      //   const providerCfg = settings.pdfProvidersConfig?.[settings.pdfProviderId];
-      //   if (providerCfg) {
-      //     pdfProviderConfig = {
-      //       apiKey: providerCfg.apiKey,
-      //       baseUrl: providerCfg.baseUrl,
-      //     };
-      //   }
-      // }
-
       const sessionState = {
         sessionId: nanoid(),
         requirements,
         pdfText: '',
         pdfImages: [],
         imageStorageIds: [],
-        // 🗑️ 删除: pdfStorageKey,
-        // 🗑️ 删除: pdfFileName,
-        // 🗑️ 删除: pdfProviderId,
-        // 🗑️ 删除: pdfProviderConfig,
         sceneOutlines: null,
         currentStep: 'generating' as const,
       };
@@ -502,152 +426,130 @@ function HomePage() {
       )}
 
       {/* ═══ Top-right pill ═══ */}
-      
+      <div
+        ref={toolbarRef}
+        className="fixed top-4 right-4 z-50 flex items-center gap-1 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md px-2 py-1.5 rounded-full border border-gray-100/50 dark:border-gray-700/50 shadow-sm"
+      >
+        {/* 🔥 会员徽章 / 升级按钮 */}
+        {!userLoading && user && !membershipLoading && (
+          <>
+            {membership.isPro ? (
+              <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-medium text-white shadow-lg shadow-amber-500/25">
+                <Crown className="size-3.5" />
+                Pro
+                {membership.remainingDays > 0 && membership.remainingDays <= 30 && (
+                  <span className="text-[10px] opacity-80">
+                    剩 {membership.remainingDays}天
+                  </span>
+                )}
+              </div>
+            ) : (
+              <Link href="/upgrade">
+                <button className="flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-medium text-white shadow-lg shadow-amber-500/25 transition hover:scale-105 hover:shadow-xl">
+                  <Sparkles className="size-3.5" />
+                  升级 Pro
+                </button>
+              </Link>
+            )}
+            <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
+          </>
+        )}
 
-     <div
-  ref={toolbarRef}
-  className="fixed top-4 right-4 z-50 flex items-center gap-1 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md px-2 py-1.5 rounded-full border border-gray-100/50 dark:border-gray-700/50 shadow-sm"
->
-  {/* 🔥 会员徽章 / 升级按钮 */}
-  {!userLoading && user && !membershipLoading && (
-    <>
-      {membership.isPro ? (
-        <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-medium text-white shadow-lg shadow-amber-500/25">
-          <Crown className="size-3.5" />
-          Pro
-          {membership.remainingDays > 0 && membership.remainingDays <= 30 && (
-            <span className="text-[10px] opacity-80">
-              剩 {membership.remainingDays}天
-            </span>
+        {/* 🔐 用户菜单 / 登录按钮 */}
+        {userLoading ? (
+          <div className="w-20 h-8 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700" />
+        ) : user ? (
+          <UserMenu />
+        ) : (
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-700/50 transition-all"
+          >
+            <LogIn className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('login') || '登录'}</span>
+          </button>
+        )}
+
+        <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
+
+        {/* Language Selector */}
+        <LanguageSwitcher onOpen={() => setThemeOpen(false)} />
+
+        <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
+
+        {/* Theme Selector */}
+        <div className="relative">
+          <button
+            onClick={() => setThemeOpen(!themeOpen)}
+            className="p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all"
+          >
+            {theme === 'light' && <Sun className="w-4 h-4" />}
+            {theme === 'dark' && <Moon className="w-4 h-4" />}
+            {theme === 'system' && <Monitor className="w-4 h-4" />}
+          </button>
+          {themeOpen && (
+            <div className="absolute top-full mt-2 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden z-50 min-w-[140px]">
+              <button
+                onClick={() => { setTheme('light'); setThemeOpen(false); }}
+                className={cn(
+                  'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2',
+                  theme === 'light' && 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
+                )}
+              >
+                <Sun className="w-4 h-4" />
+                {t('settings.themeOptions.light')}
+              </button>
+              <button
+                onClick={() => { setTheme('dark'); setThemeOpen(false); }}
+                className={cn(
+                  'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2',
+                  theme === 'dark' && 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
+                )}
+              >
+                <Moon className="w-4 h-4" />
+                {t('settings.themeOptions.dark')}
+              </button>
+              <button
+                onClick={() => { setTheme('system'); setThemeOpen(false); }}
+                className={cn(
+                  'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2',
+                  theme === 'system' && 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
+                )}
+              >
+                <Monitor className="w-4 h-4" />
+                {t('settings.themeOptions.system')}
+              </button>
+            </div>
           )}
         </div>
-      ) : (
-        <Link href="/upgrade">
-          <button className="flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-medium text-white shadow-lg shadow-amber-500/25 transition hover:scale-105 hover:shadow-xl">
-            <Sparkles className="size-3.5" />
-            升级 Pro
+
+        <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
+
+        {/* Settings Button */}
+        <div className="relative">
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className="p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all group"
+          >
+            <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
           </button>
-        </Link>
-      )}
-      <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
-    </>
-  )}
-
-  {/* ============================================================
-      🔐 用户菜单 / 登录按钮
-      ============================================================ */}
-  {userLoading ? (
-    <div className="w-20 h-8 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700" />
-  ) : user ? (
-    <UserMenu />
-  ) : (
-    <button
-      onClick={() => setShowLoginModal(true)}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-700/50 transition-all"
-    >
-      <LogIn className="w-4 h-4" />
-      <span className="hidden sm:inline">{t('login') || '登录'}</span>
-    </button>
-  )}
-
-  <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
-
-  {/* Language Selector */}
-  <LanguageSwitcher onOpen={() => setThemeOpen(false)} />
-
-  <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
-
-  {/* Theme Selector */}
-  <div className="relative">
-    <button
-      onClick={() => {
-        setThemeOpen(!themeOpen);
-      }}
-      className="p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all"
-    >
-      {theme === 'light' && <Sun className="w-4 h-4" />}
-      {theme === 'dark' && <Moon className="w-4 h-4" />}
-      {theme === 'system' && <Monitor className="w-4 h-4" />}
-    </button>
-    {themeOpen && (
-      <div className="absolute top-full mt-2 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden z-50 min-w-[140px]">
-        <button
-          onClick={() => {
-            setTheme('light');
-            setThemeOpen(false);
-          }}
-          className={cn(
-            'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2',
-            theme === 'light' &&
-              'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
-          )}
-        >
-          <Sun className="w-4 h-4" />
-          {t('settings.themeOptions.light')}
-        </button>
-        <button
-          onClick={() => {
-            setTheme('dark');
-            setThemeOpen(false);
-          }}
-          className={cn(
-            'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2',
-            theme === 'dark' &&
-              'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
-          )}
-        >
-          <Moon className="w-4 h-4" />
-          {t('settings.themeOptions.dark')}
-        </button>
-        <button
-          onClick={() => {
-            setTheme('system');
-            setThemeOpen(false);
-          }}
-          className={cn(
-            'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2',
-            theme === 'system' &&
-              'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
-          )}
-        >
-          <Monitor className="w-4 h-4" />
-          {t('settings.themeOptions.system')}
-        </button>
+        </div>
       </div>
-    )}
-  </div>
 
-  <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
+      {/* ============================================================
+          🔐 模态框
+          ============================================================ */}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
+      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} />}
 
-  {/* Settings Button */}
-  <div className="relative">
-    <button
-      onClick={() => setSettingsOpen(true)}
-      className="p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all group"
-    >
-      <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
-    </button>
-  </div>
-</div>
-
-{/* ============================================================
-    🔐 模态框
-    ============================================================ */}
-{showLoginModal && (
-  <LoginModal onClose={() => setShowLoginModal(false)} />
-)}
-{showPaywall && (
-  <PaywallModal onClose={() => setShowPaywall(false)} />
-)}
-
-<SettingsDialog
-  open={settingsOpen}
-  onOpenChange={(open) => {
-    setSettingsOpen(open);
-    if (!open) setSettingsSection(undefined);
-  }}
-  initialSection={settingsSection}
-/>
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={(open) => {
+          setSettingsOpen(open);
+          if (!open) setSettingsSection(undefined);
+        }}
+        initialSection={settingsSection}
+      />
 
       {/* ═══ Hero section: title + input ═══ */}
       <motion.div
@@ -662,18 +564,12 @@ function HomePage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            delay: 0.1,
-            type: 'spring',
-            stiffness: 200,
-            damping: 20,
-          }}
+          transition={{ delay: 0.1, type: 'spring', stiffness: 200, damping: 20 }}
           className="mb-2"
         >
           <LobsterIcon className="lobster-responsive" onHover={handleLobsterHover} />
         </motion.div>
 
-        {/* 🔥 标语 - 支持动画切换 */}
         <motion.p
           key={taglineText}
           initial={{ opacity: 0 }}
@@ -681,9 +577,7 @@ function HomePage() {
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className={cn(
             'text-sm mb-8 transition-colors duration-300',
-            isDalek 
-              ? 'text-cyan-400 font-bold' 
-              : 'text-muted-foreground/60'
+            isDalek ? 'text-cyan-400 font-bold' : 'text-muted-foreground/60'
           )}
         >
           {taglineText}
@@ -714,74 +608,21 @@ function HomePage() {
               rows={4}
             />
 
-            <div className="px-3 pb-3 flex items-end gap-2">
-              <div className="flex-1 min-w-0">
-               <GenerationToolbar
-                 webSearch={form.webSearch}
-                 onWebSearchChange={(v) => updateForm('webSearch', v)}
-                 onSettingsOpen={(section) => {
-                 setSettingsSection(section);
-                 setSettingsOpen(true);
-               }}
-                pdfFile={null}  // 传入 null
-                onPdfFileChange={() => {}}  // 空函数
-                onPdfError={() => {}}  // 空函数
-              />
-            </div>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                    onClick={() => updateForm('interactiveMode', !form.interactiveMode)}
-                    className={cn(
-                      'relative inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer select-none whitespace-nowrap border shrink-0 h-8',
-                      form.interactiveMode
-                        ? 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 border-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.35)] dark:shadow-[0_0_12px_rgba(6,182,212,0.25)]'
-                        : 'border-cyan-300/60 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20',
-                    )}
-                  >
-                    {form.interactiveMode && (
-                      <span
-                        className="absolute inset-[-4px] rounded-full border border-cyan-400/40 dark:border-cyan-400/25"
-                        style={{
-                          animation: 'interactive-mode-breathe 2s ease-in-out infinite',
-                        }}
-                      />
-                    )}
-                    <Atom className="size-3.5 relative z-10 animate-[spin_3s_linear_infinite]" />
-                    <span className="relative z-10">{t('toolbar.interactiveModeLabel')}</span>
-                  </motion.button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">
-                  {t('toolbar.interactiveModeHint')}
-                </TooltipContent>
-              </Tooltip>
-
-              {/* 🗑️ 删除 SpeechButton */}
-              {/* <SpeechButton
-                size="md"
-                onTranscription={(text) => {
-                  setForm((prev) => {
-                    const next = prev.requirement + (prev.requirement ? ' ' : '') + text;
-                    updateRequirementCache(next);
-                    return { ...prev, requirement: next };
-                  });
-                }}
-              /> */}
-
+            {/* 底部：仅保留生成按钮 */}
+            <div className="px-3 pb-3 flex justify-end">
               <button
                 onClick={handleGenerate}
                 disabled={!canGenerate}
                 className={cn(
-                  'shrink-0 h-8 rounded-lg flex items-center justify-center gap-1.5 transition-all px-3',
+                  "h-8 rounded-lg flex items-center justify-center gap-1.5 px-3 transition-all",
                   canGenerate
-                    ? 'bg-primary text-primary-foreground hover:opacity-90 shadow-sm cursor-pointer'
-                    : 'bg-muted text-muted-foreground/40 cursor-not-allowed',
+                    ? "bg-primary text-primary-foreground hover:opacity-90 shadow-sm cursor-pointer"
+                    : "bg-muted text-muted-foreground/40 cursor-not-allowed"
                 )}
               >
-                <span className="text-xs font-medium">{t('toolbar.enterClassroom')}</span>
+                <span className="text-xs font-medium">
+                  {t("toolbar.enterClassroom")}
+                </span>
                 <ArrowUp className="size-3.5" />
               </button>
             </div>
@@ -899,88 +740,6 @@ function HomePage() {
                 </motion.div>
               </button>
 
-              {/* 🗑️ 删除搜索图标和搜索框 */}
-              {/* <AnimatePresence initial={false}>
-                {!searchOpen ? (
-                  <motion.button
-                    key="search-icon"
-                    ref={searchButtonRef}
-                    type="button"
-                    aria-label={t('classroom.searchAriaLabel')}
-                    onClick={() => {
-                      setSearchOpen(true);
-                      if (!recentOpen) persistRecentOpen(true);
-                      requestAnimationFrame(() => searchInputRef.current?.focus());
-                    }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.12, ease: 'easeOut' }}
-                    className="flex items-center justify-center size-6 rounded-full text-muted-foreground/50 hover:text-foreground/70 hover:bg-muted/50 transition-colors cursor-pointer"
-                  >
-                    <Search className="size-3.5" />
-                  </motion.button>
-                ) : (
-                  <motion.div
-                    key="search-input"
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 200 }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
-                    className="overflow-hidden"
-                  >
-                    <InputGroup
-                      className={cn(
-                        'h-7 text-[12px] rounded-full bg-muted/40 border-transparent shadow-none',
-                        'transition-colors',
-                        'hover:bg-muted/60',
-                        'has-[[data-slot=input-group-control]:focus-visible]:bg-muted/60',
-                        'has-[[data-slot=input-group-control]:focus-visible]:border-transparent',
-                        'has-[[data-slot=input-group-control]:focus-visible]:ring-0',
-                      )}
-                    >
-                      <InputGroupInput
-                        ref={searchInputRef}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Escape') {
-                            e.preventDefault();
-                            if (searchQuery) {
-                              setSearchQuery('');
-                            } else {
-                              setSearchOpen(false);
-                              requestAnimationFrame(() => searchButtonRef.current?.focus());
-                            }
-                          }
-                        }}
-                        onBlur={() => {
-                          if (!searchQuery) {
-                            setSearchOpen(false);
-                          }
-                        }}
-                        placeholder={t('classroom.searchPlaceholder')}
-                        aria-label={t('classroom.searchAriaLabel')}
-                        className="h-7 pl-3 placeholder:text-muted-foreground/50"
-                      />
-                      {searchQuery && (
-                        <InputGroupButton
-                          size="icon-xs"
-                          aria-label={t('classroom.clearSearch')}
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => {
-                            setSearchQuery('');
-                            searchInputRef.current?.focus();
-                          }}
-                        >
-                          <X />
-                        </InputGroupButton>
-                      )}
-                    </InputGroup>
-                  </motion.div>
-                )}
-              </AnimatePresence> */}
-
               <button
                 onClick={triggerFileSelect}
                 disabled={importing}
@@ -1016,18 +775,13 @@ function HomePage() {
                 transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
                 className="w-full overflow-hidden"
               >
-                {/* 🗑️ 删除搜索空状态和过滤逻辑，直接显示所有教室 */}
                 <div className="pt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
                   {classrooms.map((classroom, i) => (
                     <motion.div
                       key={classroom.id}
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        delay: i * 0.04,
-                        duration: 0.35,
-                        ease: 'easeOut',
-                      }}
+                      transition={{ delay: i * 0.04, duration: 0.35, ease: 'easeOut' }}
                     >
                       <ClassroomCard
                         classroom={classroom}
@@ -1229,9 +983,7 @@ function GreetingBar() {
                         onChange={(e) => setNameDraft(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') commitName();
-                          if (e.key === 'Escape') {
-                            setEditingName(false);
-                          }
+                          if (e.key === 'Escape') setEditingName(false);
                         }}
                         onBlur={commitName}
                         maxLength={20}
