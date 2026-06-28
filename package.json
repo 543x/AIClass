@@ -13,6 +13,8 @@
     "build": "node scripts/assert-vendor-maic-importer.mjs && prisma generate && prisma db push && next build",
     "start": "next start",
     "lint": "eslint",
+    "paypal:init": "tsx scripts/create-paypal-products.ts",
+    "prebuild": "pnpm paypal:init",
     "check:i18n-keys": "node scripts/check-i18n-keys.mjs",
     "check": "prettier . --check",
     "format": "prettier . --write",

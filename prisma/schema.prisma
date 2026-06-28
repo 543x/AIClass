@@ -1,10 +1,17 @@
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("NEON_URL")
+  url      = env("DATABASE_URL")
+}
+
+enum Membership {
+  free
+  monthly
+  yearly
 }
 
 model User {
@@ -12,6 +19,8 @@ model User {
   email        String    @unique
   nickname     String?
   passwordHash String
+  membership   Membership @default(free)
+  paypalSubscriptionId String? @unique
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   sessions     Session[]
@@ -40,7 +49,7 @@ model Payment {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan        String
-  status      String
+  status      String   // pending, active, cancelled, expired, refunded
   provider    String
   providerId  String?  @unique
   eventId     String?  @unique
