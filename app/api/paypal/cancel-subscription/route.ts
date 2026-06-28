@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 })
     }
 
+    // ✅ 现在 user.paypalSubscriptionId 存在了
     if (!user.paypalSubscriptionId) {
       return NextResponse.json({ error: '没有找到订阅' }, { status: 404 })
     }
@@ -44,19 +45,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    await prisma.payment.updateMany({
-      where: {
-        userId: user.id,
-        providerId: user.paypalSubscriptionId,
-        status: 'active',
-      },
-      data: { status: 'cancelled' },
-    })
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { paypalSubscriptionId: null },
-    })
+    await prisma.$transaction([
+      prisma.payment.updateMany({
+        where: {
+          userId: user.id,
+          providerId: user.paypalSubscriptionId,
+          status: 'active',
+        },
+        data: { status: 'cancelled' },
+      }),
+      prisma.user.update({
+        where: { id: user.id },
+        data: { paypalSubscriptionId: null },
+      }),
+    ])
 
     log.info(`Subscription cancelled for user ${user.id}`)
     return NextResponse.json({ 

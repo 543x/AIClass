@@ -1,17 +1,11 @@
+// lib/session.ts
 import { cookies } from 'next/headers'
 import { prisma } from './db'
+import { Prisma } from '@prisma/client'
 import crypto from 'crypto'
 
-// 根据实际的 Prisma schema 定义 User 类型
-interface User {
-  id: string
-  email: string
-  nickname: string | null   // ✅ 改为 nickname
-  passwordHash: string | null  // 注意：密码字段名可能是 passwordHash
-  createdAt: Date
-  updatedAt: Date
-  // 如果有其他字段，也添加进来
-}
+// 定义包含 paypalSubscriptionId 的 User 类型
+type User = Prisma.UserGetPayload<{}>
 
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7 // 7 天
 
