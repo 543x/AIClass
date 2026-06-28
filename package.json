@@ -10,7 +10,7 @@
     "postinstall": "cd packages/mathml2omml && npm run build && cd ../pptxgenjs && npm run build && cd ../@maic/dsl && pnpm run build && cd ../importer && pnpm run build && cd ../renderer && pnpm run build && cd ../../.. && node scripts/sync-maic-importer.mjs",
     "sync:maic-importer": "node scripts/sync-maic-importer.mjs",
     "dev": "next dev",
-    "build": "node scripts/assert-vendor-maic-importer.mjs && prisma generate && prisma db push && next build",
+    "build": "node scripts/assert-vendor-maic-importer.mjs && prisma generate && prisma db push --accept-data-loss && next build",
     "start": "next start",
     "lint": "eslint",
     "paypal:init": "tsx scripts/create-paypal-products.ts",
