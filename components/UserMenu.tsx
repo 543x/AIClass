@@ -86,16 +86,6 @@ export function UserMenu() {
 
             <div className="p-1">
               <button
-                onClick={() => {
-                  setOpen(false);
-                  // TODO: 跳转设置页面
-                }}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-              >
-                <Settings className="size-4" />
-                设置
-              </button>
-              <button
                 onClick={() => { logout(); setOpen(false); }}
                 className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
               >
