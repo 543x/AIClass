@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { createLogger } from '@/lib/logger';
+import { createSession } from '@/lib/session'; // ✅ 导入 session 创建函数
 
 const log = createLogger('auth-register');
 
@@ -11,7 +12,7 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   nickname: z.string().optional(),
-  turnstileToken: z.string().min(1),  // ✅ 添加 Turnstile token
+  turnstileToken: z.string().min(1),
 });
 
 export async function POST(req: NextRequest) {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { email, password, nickname, turnstileToken } = registerSchema.parse(body);
 
-    // ✅ 验证 Turnstile token
+    // 验证 Turnstile token
     const secretKey = process.env.TURNSTILE_SECRET_KEY;
     if (!secretKey) {
       log.error('TURNSTILE_SECRET_KEY is not set');
@@ -51,12 +52,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 原有注册逻辑
+    // 检查邮箱是否已存在
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) {
       return NextResponse.json({ error: '邮箱已存在' }, { status: 400 });
     }
 
+    // 创建用户
     const hash = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
@@ -66,6 +68,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // ✅ 注册成功后自动创建 session（自动登录）
+    await createSession(user.id);
+
+    // 返回用户信息
     return NextResponse.json({
       success: true,
       user: {

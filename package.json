@@ -15,8 +15,6 @@
     "lint": "eslint",
     "paypal:init": "tsx scripts/create-paypal-products.ts",
     "prebuild": "pnpm paypal:init",
-    "prisma:reset": "pnpm prisma db push --force-reset --skip-generate",
-    "prisma:push": "pnpm prisma generate && pnpm prisma db push --accept-data-loss",
     "check:i18n-keys": "node scripts/check-i18n-keys.mjs",
     "check": "prettier . --check",
     "format": "prettier . --write",
